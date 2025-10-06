@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour {
     [Header("References")]
+    public Transform cameraTransform;
     Rigidbody rb;
     [Header("Settings")]
     [SerializeField] float speed;
@@ -22,11 +23,22 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     void HandleMove() {
-        float xInput = Input.GetAxisRaw("Horizontal"); // A/D
-        float zInput = Input.GetAxisRaw("Vertical");   // W/S
+        float xInput = Input.GetAxisRaw("Horizontal");
+        float zInput = Input.GetAxisRaw("Vertical");
 
-        Vector3 move = new(xInput, 0, zInput);
+        // get X and Y
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
 
+        forward.y = 0f;
+        right.y = 0f;
+        forward.Normalize();
+        right.Normalize();
+
+        // moves direction
+        Vector3 move = (forward * zInput + right * xInput).normalized;
+
+        // apply
         transform.position += speed * Time.deltaTime * move;
     }
 
@@ -38,6 +50,7 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     void OnCollisionEnter(Collision collision) {
+        // if player hits the cube, being pushed back.
         if (collision.gameObject.CompareTag("Obstacle")) {
             rb.linearVelocity = new Vector3(0, pushUp, pushBack);
         }
