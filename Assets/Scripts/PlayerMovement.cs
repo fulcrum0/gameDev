@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -7,6 +8,8 @@ public class PlayerMovement : MonoBehaviour {
     [Header("Settings")]
     [SerializeField] float speed;
     [SerializeField] float jumpForce;
+    [SerializeField] float pushBack;
+    [SerializeField] float pushUp;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
@@ -31,6 +34,12 @@ public class PlayerMovement : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Space)) {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             // Vector3.up == (0,1f,0);
+        }
+    }
+
+    void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.CompareTag("Obstacle")) {
+            rb.linearVelocity = new Vector3(0, pushUp, pushBack);
         }
     }
 }
