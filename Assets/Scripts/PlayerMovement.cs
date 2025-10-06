@@ -6,21 +6,31 @@ public class PlayerMovement : MonoBehaviour {
     Rigidbody rb;
     [Header("Settings")]
     [SerializeField] float speed;
+    [SerializeField] float jumpForce;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
     }
 
     void Update() {
-        Move();
+        HandleMove();
+        HandleJump();
     }
 
-    void Move() {
+    void HandleMove() {
         float xInput = Input.GetAxisRaw("Horizontal"); // A/D
         float zInput = Input.GetAxisRaw("Vertical");   // W/S
 
         Vector3 move = new(xInput, 0, zInput);
 
         transform.position += speed * Time.deltaTime * move;
+    }
+
+    void HandleJump() {
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            // Vector3.up == (0,1f,0);
+        }
     }
 }
