@@ -16,9 +16,7 @@ public class CubeObstacle : MonoBehaviour {
         transform.position = Vector3.MoveTowards(transform.position, to.transform.position, speed * Time.deltaTime);
 
         if (Vector3.Distance(transform.position, to.transform.position) <= 0.01f) {
-            Transform temp = from;
-            from = to;
-            to = temp;
+            (from, to) = (to, from); // "from" becomes "to", "to" becomes "from"
         }
-    }
+    }   
 }
