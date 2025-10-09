@@ -55,22 +55,20 @@ public class PlayerMovement : MonoBehaviour {
 
     void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.CompareTag("Obstacle")) {
-            Vector3 pushDirection = -collision.contacts[0].normal;
-            rb.linearVelocity = pushDirection * pushBack + Vector3.up * pushUp;
+            rb.linearVelocity = new Vector3(0, pushUp, pushBack);
         }
     }
 
     bool IsGrounded() {
-        return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundDistance + 0.1f, groundType);
+        return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundDistance, groundType);
     }
 
     void OnDrawGizmos() {
-        Gizmos.color = Color.red;
         Gizmos.DrawLine(transform.position, transform.position + Vector3.down * groundDistance);
     }
 
     void OnTriggerEnter(Collider other) {
-        if (other.CompareTag("Finish")) {
+        if (other.CompareTag("Finish") || other.CompareTag("Fail")) {
             transform.position = spawnPoint.transform.position;
         }
     }
