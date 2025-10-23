@@ -3,8 +3,11 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour {
     [Header("References")]
-    public Transform cameraTransform;
     private Rigidbody rb;
+    public Transform cameraTransform;
+    [SerializeField] Transform spawnPoint;
+    [SerializeField] GameObject finishLine;
+    [SerializeField] LayerMask groundType;
 
     [Header("Settings")]
     [SerializeField] float speed;
@@ -12,9 +15,6 @@ public class PlayerMovement : MonoBehaviour {
     [SerializeField] float pushBack;
     [SerializeField] float pushUp;
     [SerializeField] float groundDistance;
-    [SerializeField] LayerMask groundType;
-    [SerializeField] Transform spawnPoint;
-    [SerializeField] GameObject finishLine;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
