@@ -13,7 +13,7 @@ public class Player : MonoBehaviour {
         float xInput = Input.GetAxisRaw("Horizontal");
         float zInput = Input.GetAxisRaw("Vertical");
 
-        Vector3 move = new Vector3(xInput, 0f, zInput);
-        transform.Translate(speed * Time.deltaTime * move);
+        Vector3 move = new Vector3(xInput, 0f, zInput).normalized;
+        transform.Translate(speed * Time.deltaTime * move, Space.Self);
     }
 }
