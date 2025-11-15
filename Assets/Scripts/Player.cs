@@ -2,14 +2,18 @@ using UnityEngine;
 
 public class Player : MonoBehaviour {
     [Header("References")]
+    [SerializeField] Rigidbody rb;
+    [SerializeField] Animator animator;
     [SerializeField] Transform orientation;
-    Animator anim;
+    [SerializeField] Transform anim;
+
     [Header("Settings")]
     [SerializeField] float movementSpeed;
-    // [SerializeField] float rotationSpeed;
+    [SerializeField] float kickBack;
+    [SerializeField] float kickUp;
 
     void Awake() {
-        anim = GetComponentInChildren<Animator>();
+        animator = GetComponentInChildren<Animator>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -23,7 +27,7 @@ public class Player : MonoBehaviour {
     }
 
     void HandleCameraRelativeMovement() {
-        //  get nputs horizontal and vertical
+        // get inputs
         float xInput = Input.GetAxisRaw("Horizontal");
         float zInput = Input.GetAxisRaw("Vertical");
 
@@ -36,23 +40,37 @@ public class Player : MonoBehaviour {
         camRight.y = 0f;
         camRight.Normalize();
 
-        // turn input to the rotation of cam
+        // input converted to camera-relative
         Vector3 moveDir = (camForward * zInput + camRight * xInput).normalized;
 
         // move
         if (moveDir.sqrMagnitude > 0.01f) {
-            transform.Translate(moveDir * movementSpeed * Time.deltaTime, Space.World);
 
-            // turn anim
-            // Quaternion targetRot = Quaternion.LookRotation(moveDir);
-            // anim.rotation = Quaternion.Slerp(anim.rotation, targetRot, Time.deltaTime * rotationSpeed);
+            // anim turns
+            Quaternion targetRot = Quaternion.LookRotation(moveDir);
+            anim.rotation = Quaternion.Slerp(anim.rotation, targetRot, Time.deltaTime * 10f);
+
+            // movement
+            transform.Translate(movementSpeed * Time.deltaTime * moveDir, Space.World);
         }
 
-        // 6) Animation param
+        // animation param
         float currentSpeed = Mathf.Clamp01(moveDir.magnitude);
-        anim.SetFloat("move", currentSpeed);
+        animator.SetFloat("move", currentSpeed);
     }
+
     void CameraRotation() {
         orientation.rotation = Quaternion.identity;
     }
+
+    void OnCollisionEnter(Collision collision) {
+        Vector3 knockBack = new(0, 1f * -kickUp, 1f * -kickBack);
+        if (collision.gameObject.CompareTag("Obstacle")) {
+            rb.AddForce(knockBack, ForceMode.Impulse);
+        }
+    }
+
+    // bool isGrounded() {
+    //     return 
+    // }
 }
