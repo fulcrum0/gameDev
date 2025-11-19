@@ -2,36 +2,57 @@ using UnityEngine;
 
 public class Player : MonoBehaviour {
     [Header("References")]
-    [SerializeField] Rigidbody rb;
+    Rigidbody rb;
     [SerializeField] Animator animator;
     [SerializeField] Transform orientation;
     [SerializeField] Transform anim;
+    [SerializeField] LayerMask groundLayer;
 
     [Header("Settings")]
     [SerializeField] float movementSpeed;
-    [SerializeField] float kickBack;
-    [SerializeField] float kickUp;
+    [SerializeField] float jumpForce;
+    [SerializeField] float groundDistance;
+
+    bool isGrounded;
+    float xInput;
+    float zInput;
+    Vector3 moveDir;
 
     void Awake() {
+        rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void Update() {
-        HandleCameraRelativeMovement();
+        GetInput();
+        Jump();
     }
 
-    void LateUpdate() {
-        CameraRotation();
+    void FixedUpdate() {
+        GroundCheck();
+        HandleMovement();
     }
 
-    void HandleCameraRelativeMovement() {
-        // get inputs
-        float xInput = Input.GetAxisRaw("Horizontal");
-        float zInput = Input.GetAxisRaw("Vertical");
+    // INPUT
+    void GetInput() {
+        xInput = Input.GetAxisRaw("Horizontal");
+        zInput = Input.GetAxisRaw("Vertical");
+    }
 
-        // get cam directions
+    // JUMP
+    void Jump() {
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded) {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            animator.SetTrigger("jump");
+        }
+    }
+
+    // MOVEMENT
+    void HandleMovement() {
+        // CAMERA-RELATIVE DIRECTIONS
         Vector3 camForward = Camera.main.transform.forward;
         camForward.y = 0f;
         camForward.Normalize();
@@ -40,37 +61,39 @@ public class Player : MonoBehaviour {
         camRight.y = 0f;
         camRight.Normalize();
 
-        // input converted to camera-relative
-        Vector3 moveDir = (camForward * zInput + camRight * xInput).normalized;
+        moveDir = (camForward * zInput + camRight * xInput).normalized;
 
-        // move
+        // TURN PLAYER
         if (moveDir.sqrMagnitude > 0.01f) {
-
-            // anim turns
             Quaternion targetRot = Quaternion.LookRotation(moveDir);
-            anim.rotation = Quaternion.Slerp(anim.rotation, targetRot, Time.deltaTime * 10f);
-
-            // movement
-            transform.Translate(movementSpeed * Time.deltaTime * moveDir, Space.World);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 10f);
         }
 
-        // animation param
-        float currentSpeed = Mathf.Clamp01(moveDir.magnitude);
-        animator.SetFloat("move", currentSpeed);
+        // MOVE PLAYER
+        Vector3 displacement = moveDir * (movementSpeed * Time.fixedDeltaTime);
+        rb.MovePosition(rb.position + displacement);
+
+        // ANIMATIONS
+        animator.SetFloat("move", moveDir.magnitude);
     }
 
-    void CameraRotation() {
-        orientation.rotation = Quaternion.identity;
+    // GROUND CHECK
+    void GroundCheck() {
+        Vector3 start = transform.position + Vector3.up * 0.1f;
+        isGrounded = Physics.Raycast(start, Vector3.down, groundDistance, groundLayer);
     }
+
+    // GIZMOS
+    void OnDrawGizmos() {
+        Gizmos.color = Color.green;
+        Vector3 start = transform.position + Vector3.up * 0.1f;
+        Gizmos.DrawLine(start, start + Vector3.down * groundDistance);
+    }
+
 
     void OnCollisionEnter(Collision collision) {
-        Vector3 knockBack = new(0, 1f * -kickUp, 1f * -kickBack);
-        if (collision.gameObject.CompareTag("Obstacle")) {
-            rb.AddForce(knockBack, ForceMode.Impulse);
+        if(collision.gameObject.CompareTag("Obstacle")){
+            rb.AddForce(Vector3.up * 7 + Vector3.back * 7, ForceMode.Impulse);
         }
     }
-
-    // bool isGrounded() {
-    //     return 
-    // }
 }
