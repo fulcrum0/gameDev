@@ -16,7 +16,6 @@ public class Player : MonoBehaviour {
     bool isGrounded;
     float xInput;
     float zInput;
-    Vector3 moveDir;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
@@ -61,7 +60,7 @@ public class Player : MonoBehaviour {
         camRight.y = 0f;
         camRight.Normalize();
 
-        moveDir = (camForward * zInput + camRight * xInput).normalized;
+        Vector3 moveDir = (camForward * zInput + camRight * xInput).normalized;
 
         // TURN PLAYER
         if (moveDir.sqrMagnitude > 0.01f) {
